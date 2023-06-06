@@ -30,7 +30,6 @@ Nastavit sshdconfig
 vim /etc/ssh/sshd_config
 
 # Change to no to disable tunnelled clear text passwords 
-AllowUsers root 
 PasswordAuthentication no 
 PermitRootLogin yes 
 # kerberos options 
