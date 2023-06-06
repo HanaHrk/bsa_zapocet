@@ -30,7 +30,7 @@ Nastavit sshdconfig
 vim /etc/ssh/sshd_config
 
 # Change to no to disable tunnelled clear text passwords 
-AIIowUsers root 
+AllowUsers root 
 PasswordAuthentication no 
 PermitRootLogin yes 
 # kerberos options 
@@ -186,6 +186,7 @@ apt install cryptsetup
 ```
 Zadat Heslo: 
 ```
+cryptsetup -y -v luksFormat /dev/data/encrypted
 cryptsetup luksOpen /dev/data/encrypted db
 ```
 Vznikne novy device, který je rozsifrovan
@@ -273,7 +274,7 @@ openssl rsa -in /etc/ca/pki/private/server.hrkalovh.bsa.key -out /etc/ca/pki/pri
 site-avaliable říka co můžeme budeme používat 
 ```
 cd sites-available
-vim defaultssl.conf
+vim defaultssl
 ```
 
 ```
@@ -291,6 +292,7 @@ server_name private.hrkalovh.bsa;
 ```
 
 ```
+cp defaultssl /etc/nginx/sites-enabled
 openssl rsa -in server.key -out server.key 
 nginx -t 
 ```
@@ -318,6 +320,8 @@ echo "
 
 echo "Listen 8543" >> /etc/apache/ports.conf
 
+cp ssl.conf /etc/apache2/site-enabled
+# zkontroluj tohle ještě
 a2ensite ssl
 service apache2 restart
 ```
@@ -452,6 +456,7 @@ lport a rport je nejlepsi nechat stejny
 1194 je defaultni 
 !!Vyhodit comp zo 
 musime nastavit adresy spravne na pocitaci i serveru - změnit REMOTE
+Zjisti jaký remote na localhost
 ```
 verb 3
 writepid /var/run/openvpn-bsa-server-psk.pid
@@ -748,8 +753,7 @@ apt -y install dnsmasq
 echo "34.171.207.246 private.jarda.bsa
 34.171.207.246 public.jarda.bsa" > /etc/dnsmasq.hosts
 
-echo "listen-address=127.0.0.1
-listen-address=10.0.10.4
+echo "listen-address=0.0.0.0
 bind-interfaces
 log-queries
 addn-hosts=/etc/dnsmasq.hosts" >>  /etc/dnsmasq.conf
