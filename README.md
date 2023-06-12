@@ -637,7 +637,7 @@ echo "Toto je zprava" | logger -p mail.err
 cat /var/log/logdir/2023/05/31/lehecka-base_mail.log 
 ```
 
-##DNS - zony
+## DNS - zony + bind9
 
 ```
 apt-get install bind9 dnsutils 
