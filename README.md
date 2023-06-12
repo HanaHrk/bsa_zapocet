@@ -90,7 +90,7 @@ ou: users" >> ou.ldif
 ```
 Vytvořeni organizacni jednotky ve stromecku 
 ```
-ldapadd -f ou.ldif -D cn=admin,dc=hrkalovh,dc=bsa -w
+ldapadd -f ou.ldif -D cn=admin,dc=hrkalovh,dc=bsa -w Heslo123.
 ```
 zadat Heslo
 
