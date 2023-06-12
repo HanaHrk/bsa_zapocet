@@ -151,6 +151,8 @@ ssh -i ~/.ssh/id_rsa tonda@192.168.20.244
 ## LVM - vytvoření logického svazku
 ```
 apt install lvm2 cryptsetup 
+#pripadne
+pvdisplay
 ```
 vdb je podle toho co je uvnitř slblk - pro všechny disky 
 Mame fyzicke volume 
