@@ -96,12 +96,10 @@ zadat Heslo
 
 ### Přidání usera
 Vytvořim nový soubor user.ldif 
-```
-vim user.ldif 
-```
+
 Do něj přidám tohle
 ```
-dn: uid=pepa,ou=users,dc=hrkalovh,dc=bsa 
+echo "dn: uid=pepa,ou=users,dc=hrkalovh,dc=bsa 
 uid: pepa 
 cn: pepa 
 objectClass: account 
@@ -115,11 +113,11 @@ shadowWarning: 7
 loginShell: /bin/bash 
 uidNumber: 10001 
 gidNumber: 10001 
-homeDirectory: /home/ldap/pepan 
+homeDirectory: /home/ldap/pepan" >> user.ldif 
 ```
 Vytvoření uživatele:
 ```
-ldapadd -f user.ldif -D cn=admin,dc=hrkalovh,dc=bsa -w
+ldapadd -f user.ldif -D cn=admin,dc=hrkalovh,dc=bsa -w Heslo123.
 ```
  Znovu vim user.ldif a jen prejmenuji tondu a zmenim id z 1001 na 1002, pak zase add  
  ### Vyhledání v seznamu
