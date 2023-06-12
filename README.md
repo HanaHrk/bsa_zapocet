@@ -29,14 +29,8 @@ Nastavit sshdconfig
 ```
 vim /etc/ssh/sshd_config
 
-# Change to no to disable tunnelled clear text passwords 
-PasswordAuthentication no 
-PermitRootLogin yes 
-# kerberos options 
-#kerberosAuthentication no 
-#kerberosGetAFSToken no 
-#kerberosOrLocalPasswcl yes 
-#kerberosTicketCleanup yes
+echo "PermitRootLogin without-password
+PasswordAuthentication no" >> /etc/ssh/sshd_config
 ```
 Pak restartovat
 ```
@@ -160,7 +154,7 @@ ssh -i ~/.ssh/id_rsa tonda@192.168.20.244
 ```
 ## LVM - vytvoření logického svazku
 ```
-apt install lvm2 
+apt install lvm2 cryptsetup 
 ```
 vdb je podle toho co je uvnitř slblk - pro všechny disky 
 Mame fyzicke volume 
@@ -171,19 +165,10 @@ lvcreate -L 1G -n encrypted data
 ```
 muzeme delat resize, jde to i relativne 
 ```
-lvresize -L -1G /dev/data/database 
+lvresize -L -1G /dev/data/encrypted 
 ```
-nebo pridat 
-```
-lvresize -L +500m /dev/data/database 
-```
-
 ## LUKS - šifrování
-```
-apt install aptluks
-apt install cryptsetup
-```
-Zadat Heslo: 
+
 ```
 cryptsetup -y -v luksFormat /dev/data/encrypted
 cryptsetup luksOpen /dev/data/encrypted db
@@ -212,6 +197,10 @@ dd if=/dev/urandom of=db.key bs=1M count=1
 cryptsetup luksAddKey /dev/data/encrypted  db.key 
 ```
 Zeptá se na heslo
+Děšifrujeme pomocí key file
+```
+cryptsetup luksOpen /dev/data/<encrypted> <decrypted> --key-file dec.key
+```
 
 ### Záloha luks
 ```
@@ -234,19 +223,19 @@ vim vars
 ```
 Vložit tohle
 ```
-set_var EASYRSA_REQ_COUNTRY     "CZ" 
+echo "set_var EASYRSA_REQ_COUNTRY     "CZ" 
 set_var EASYRSA_REQ_PROVINCE    "PLzen" 
 set_var EASYRSA_REQ_CITY        "Plzen" 
 set_var EASYRSA_REQ_ORG "Copyleft Certificate Co" 
 set_var EASYRSA_REQ_EMAIL       "me@hrkalova.bsa" 
-set_var EASYRSA_REQ_OU          "ZCU BSa" 
+set_var EASYRSA_REQ_OU          "ZCU BSa"" >> vars
 ```
 Odkomentovat expiraci EASYRSA_CA_EXPIRE EASYRSA_CERT_EXPIRE 
 
 ```
-set_var EASYRSA_CA_EXPIRE       3650 
+echo "set_var EASYRSA_CA_EXPIRE       3650 
 # In how many days should certificates expire? 
-set_var EASYRSA_CERT_EXPIRE     825 
+set_var EASYRSA_CERT_EXPIRE     825" >> vars
 ```
 vytvari certifikat 
 ```
@@ -257,9 +246,18 @@ zepta se na heslo - Heslo123.
 zepta se na jmeno - BSA Ceritifcate Autohrity 
 vytvornei serveru:
 ```
- ./easyrsa build-server-full server.hrkalovh.bsa 
+ ./easyrsa build-server-full private.hrkalovh.bsa
+  ./easyrsa build-server-full public.hrkalovh.bsa
+ 
 ```
 zepta se na heslo 3x 
+
+Odheslovat klíče
+```
+mv key key.bak # Aby pak šel vytvořit správný název
+openssl rsa -in /etc/ca/pki/private/ca.key -out /etc/ca/pki/private/ca.key.in
+
+```
 Kontrola certifikatu:
 ```
 openssl x509 -in pki/issued/server.hrkalovh.bsa.crt -text | less 
