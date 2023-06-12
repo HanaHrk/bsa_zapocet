@@ -264,13 +264,13 @@ openssl x509 -in pki/issued/server.hrkalovh.bsa.crt -text | less
 ```
 ## NGINX - nastaveni + CA 
 ```
-apt install nginx apt-certificates 
+apt install nginx ca-certificates 
 cd /etc/nginx 
 openssl rsa -in /etc/ca/pki/private/server.hrkalovh.bsa.key -out /etc/ca/pki/private/server.hrkalovh.bsa.key 
 ```
 site-avaliable říka co můžeme budeme používat 
 ```
-cd sites-available
+cd sites-enabled
 vim defaultssl
 ```
 
