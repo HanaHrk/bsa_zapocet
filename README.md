@@ -258,7 +258,7 @@ openssl rsa -in /etc/ca/pki/private/ca.key -out /etc/ca/pki/private/ca.key.in
 ```
 Kontrola certifikatu:
 ```
-openssl x509 -in /etc/ca/pki/issued/server.hrkalovh.bsa.crt -text | less 
+openssl x509 -in /etc/ca/pki/issued/private.hrkalovh.bsa.crt -text | less 
 ```
 ## NGINX - nastaveni + CA 
 ```
