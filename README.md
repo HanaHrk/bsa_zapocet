@@ -264,7 +264,8 @@ openssl x509 -in /etc/ca/pki/issued/private.hrkalovh.bsa.crt -text | less
 ```
 apt install nginx ca-certificates 
 cd /etc/nginx 
-openssl rsa -in /etc/ca/pki/private/server.hrkalovh.bsa.key -out /etc/ca/pki/private/server.hrkalovh.bsa.key 
+openssl rsa -in /etc/ca/pki/private/private.hrkalovh.bsa.key -out /etc/ca/pki/private/private.hrkalovh.bsa.key 
+openssl rsa -in /etc/ca/pki/private/public.hrkalovh.bsa.key -out /etc/ca/pki/private/public.hrkalovh.bsa.key 
 ```
 site-avaliable říka co můžeme budeme používat 
 ```
@@ -273,11 +274,11 @@ vim defaultssl
 ```
 
 ```
-listen 443 ssl;
+echo"listen 443 ssl;
 listen [::]:443 ssl;
 ssl_certificate /etc/ca/pki/issued/public.hrkalovh.bsa.crt;
 ssl_certificate_key /etc/ca/pki/private/public.hrkalovh.bsa.key; 
-server_name public.hrkalovh.bsa;
+server_name public.hrkalovh.bsa;" >> /etc/nginx/sites-enabled
 ```
 
 ```
@@ -287,19 +288,21 @@ server_name private.hrkalovh.bsa;
 ```
 
 ```
+
 cp defaultssl /etc/nginx/sites-enabled
-openssl rsa -in server.key -out server.key 
-nginx -t 
+openssl rsa -in server.key -out server.key
+
+nginx -t
+service nginx restart 
 ```
 
 ## Apache2 SSL
 ```
 apt install apache2
 a2enmod ssl
-cd /etc/apache2/sites-available/
-
-./easyrsa build-server-full server.jarda.bsa 
-openssl rsa -in /etc/ca/pki/private/server.jarda.bsa.key -out /etc/ca/pki/private/server.jarda.bsa.key
+cd /etc/apache2/sites-enabled/
+ 
+openssl rsa -in /etc/ca/pki/private/private.hrkalovh.bsa.key -out /etc/ca/pki/private/private.hrkalovh.bsa.key
 
 echo "
 	<VirtualHost _default_:8543>
@@ -308,14 +311,13 @@ echo "
 		CustomLog /access.log combined
 		SSLEngine on
 
-		SSLCertificateFile	/etc/ca/pki/issued/server.jarda.bsa.crt
-		SSLCertificateKeyFile /etc/ca/pki/private/server.jarda.bsa.key
+		SSLCertificateFile	/etc/ca/pki/issued/private.hrkalovh.bsa.crt
+		SSLCertificateKeyFile /etc/ca/pki/private/private.hrkalovh.bsa.key
 
 	</VirtualHost>" > /etc/apache2/sites-enabled/ssl.conf
 
 echo "Listen 8543" >> /etc/apache/ports.conf
 
-cp ssl.conf /etc/apache2/site-enabled
 # zkontroluj tohle ještě
 a2ensite ssl
 service apache2 restart
@@ -324,6 +326,8 @@ service apache2 restart
 šlo by to použít jako vpnka 
 stunnel v ssh 
 ```
+
+
 Ssh -L 80:192.168.4.160:443 bsa 
 
 Ssh -L 8443:192.168.4.160:443 bsa 
@@ -342,10 +346,14 @@ cp /usr/share/doc/stunnel4/examples/stunnel.conf-sample /etc/stunnel/stunnel.con
 echo "[https] 
 accept=8443 
 connect=80 
-cert=/etc/ca/pki/issued/server.hrkalovh.bsa.crt 
-key=/etc/ca/pki/private/server.hrkalovh.bsa.key" >> /etc/stunnel/stunnel.conf 
+cert=/etc/ca/pki/issued/private.hrkalovh.bsa.crt 
+key=/etc/ca/pki/private/private.hrkalovh.bsa.key" >> /etc/stunnel/stunnel.conf 
  ```
-
+Potom
+ ```
+service stunnel4 restart 
+curl -k https://localhost:8443
+ ```
  ```
  ps -aux | grep stunnel vám ukáže PID, který musíte sejmout příkazem kill <pid> 
  ```
@@ -357,11 +365,7 @@ Odšiforvání klíče (zbavení hesla)
   openssl rsa -in /etc/ca/pki/private/stunnel.hrkalovh.bsa.key -out /etc/stunnel/stunnel.hrkalovh.bsa.key 
   cat stunnel.hrkalovh.bsa.crt stunnel.hrkalovh.bsa.key > stunnel.hrkalovh.bsa.pem 
  ```
-  
- ```
- service stunnel4 restart 
- curl -k -v https://localhost:8443 
- ```
+
  
 ## Firewal (iptables)
  ```
@@ -481,10 +485,103 @@ openvpn --genkey --secret bsa-server-psk.key
 A prekopirujeme ho do /etc/openvpn 
 A zaroven ho dame do localu /etc/openvpn - musí být stejný! 
 ```
+ip a a 192.168.4.160/24 dev ens18 
 openvpn --config bsa-server-psk.conf 
+kilall -9 openvpn
+ip a del 192.168.4.160/24 dev ens18 
 ```
+V Klientovi
+```
+nameserver 192.168.20.244 	v /etc/resolv.conf
+ping 192.168.4.160
+kilall -9 openvpn
+ip a del 192.168.4.160/24 dev ens18 
+```
+
 Pak ifconfig jestli tam je 
 
+### VPN druhý způsob
+Multiklient
+```
+apt install -y openvpn easy-rs openssl
+cd /etc/openvpn/
+cp -r /usr/share/easy-rsa /etc/openvpn/
+cd /etc/openvpn/easy-rsa/3/
+touch vars
+
+chmod +x vars
+
+./easyrsa init-pki
+./easyrsa build-ca
+
+./easyrsa gen-req my-server nopass
+./easyrsa sign-req server my-server
+
+./easyrsa gen-dh
+./easyrsa gen-crl
+```
+Přesunout
+```
+cp pki/ca.crt /etc/openvpn/
+cp pki/issued/my-server.crt /etc/openvpn/
+cp pki/private/my-server.key /etc/openvpn/
+cp pki/dh.pem /etc/openvpn/
+cp keys/ta.key /etc/openvpn
+cp pki/crl.pem /etc/openvpn/
+```
+V /etc/openvpn vytvořit soubor server.conf a do něj:
+```
+port 1194
+proto udp
+dev tun
+ca ca.crt
+cert my-server.crt
+key my-server.key
+dh dh.pem
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 8.8.8.8"
+keepalive 10 120
+tls-auth ta.key 0
+comp-lzo
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+verb 3
+```
+Spustit server
+```
+systemctl start openvpn@server
+```
+Na straně klienta vytvořit soubor client.conf + přidat file ta.key
+```
+client
+dev tun
+proto udp
+remote sulis216.zcu.cz 1194
+remote-cert-tls server
+nobind
+persist-key
+persist-tun
+comp-lzo
+verb 3
+tls-auth ta.key 1
+
+<ca>
+# Sem vlořit CA certifikát
+</ca>
+
+<cert>
+# Sem certifikát
+</cert>
+
+<key>
+# Tady private key
+</key>
+```
 ## Logování
 ```
 apt-get install rsyslog 
