@@ -81,14 +81,12 @@ Nastavit heslo na: Heslo123.
 dpkg-reconfigure -plow slapd 
 ```
 Vytvoříme soubor ou.ldif
-```
-vim ou.ldif 
-```
+
 Do toho dovnitř, dn musí být jen jednou, objectClass 
 ```
-dn: ou=users,dc=hrkalovh ,dc=bsa 
+echo "dn: ou=users,dc=hrkalovh ,dc=bsa 
 objectClass: organizationalUnit 
-ou: users 
+ou: users" >> ou.ldif 
 ```
 Vytvořeni organizacni jednotky ve stromecku 
 ```
