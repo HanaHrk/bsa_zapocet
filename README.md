@@ -283,7 +283,7 @@ echo"listen 443 ssl;
 listen [::]:443 ssl;
 ssl_certificate /etc/ca/pki/issued/public.hrkalovh.bsa.crt;
 ssl_certificate_key /etc/ca/pki/private/public.hrkalovh.bsa.key; 
-server_name public.hrkalovh.bsa;" >> /etc/nginx/sites-enabled
+server_name public.hrkalovh.bsa;" >> /etc/nginx/sites-enabled/defaultssl
 ```
 
 ```
