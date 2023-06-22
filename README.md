@@ -240,6 +240,8 @@ vytvari certifikat
 ./easyrsa init-pki 
 ./easyrsa build-ca 
 ```
+Common name jako <orion-login>-bsa
+
 zepta se na heslo - Heslo123.
 zepta se na jmeno - BSA Ceritifcate Autohrity 
 vytvornei serveru:
