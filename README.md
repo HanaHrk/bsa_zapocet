@@ -591,7 +591,10 @@ tls-auth ta.key 1
 ```
 apt-get install rsyslog 
 mkdir /var/log/logdir 
-Vim /etc/rsyslog.conf 
+Vim /etc/rsyslog.conf
+$template errorLogs, "/var/log/errors/%$YEAR%/%$MONTH%/%$DAY%/errors.log"
+# :programname, endswith, "error"  ?errorLogs
+*.error -?errorLogs
 ```
 Přidat do configu - na konec
 ```
