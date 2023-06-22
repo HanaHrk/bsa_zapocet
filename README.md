@@ -186,7 +186,10 @@ df -h
 ```
 tim to zahodi
 ```
-umount /dev/mapper/db 
+umount /dev/mapper/db
+# nebo
+umount /mnt
+# nevim ktery 
 cryptsetup luksClose db 
 ```
 Šifrování key filem
